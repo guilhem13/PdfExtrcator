@@ -19,7 +19,8 @@ from werkzeug.utils import secure_filename
 from model.ExtractorFromPdf import Extractor
 from model.ModelBdd import Session_creator
 from model.PdfModel import Pdf
-import json 
+from model.NotificationModel import Notification
+import json
 #from Model import ModelBdd
 #from Model import PdfModel
 
@@ -33,6 +34,9 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
+#
+app.config.from_object("config")
+
 
 ################################### Data Model ############################################
 
@@ -52,13 +56,14 @@ def allowed_file(filename):
 def upload_file():
     if request.method == 'POST':
         if 'file' not in request.files:
-            flash("No file part")
-            return redirect(request.url)
+            #flash("No file part")
+            #return redirect(request.url)
+            return Notification("1","No file part").Message()
         else: 
             file = request.files['file']        
             if file.filename == '':                
-                flash("No selected file")
-                return redirect(request.url)
+                #flash("No selected file")
+                return Notification("2","No selected file").Message()
             else:                 
 
                 if file and allowed_file(file.filename):
@@ -69,12 +74,13 @@ def upload_file():
                     session.commit()
                     filename = secure_filename(file.filename)
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename)) 
-                    flash("File upload with Id "+str(pdf.id)) 
-                    return redirect(request.url)       
-                    #return redirect(url_for('download_file', name= filename)) #pdf.id))
+                    #flash("File upload with Id "+str(pdf.id))
+                    #return redirect(request.url)       
+                    return json.dumps({"message":"File uploaded","id_uploaded":str(pdf.id)})
                 else: 
-                    flash("File type not permitted")
-                    return redirect(request.url)
+                    #flash("File type not permitted")
+                    #return redirect(request.url)
+                    return Notification("3","File type not permitted").Message()
        
     return render_template('index.html')
 
