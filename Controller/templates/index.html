@@ -6,12 +6,15 @@
         <link rel="stylesheet" href="./static/style.css" />
     </head>
     <body>
-        <div class="d-flex flex-column justify-content-center w-100 h-100">
+        <div class="d-flex flex-column justify-content-center w-100 h-100">{{message}}
             <div class="d-flex flex-column justify-content-center align-items-center">                
                 <div class="btn-group my-5" style="position: fixed; top: 0; bottom: 0; left: 0; right: 0">
                    <div class="center-div" style="position: absolute; width: 400px; height: 100px; top:0; bottom:0; left:0; right: 0; margin: auto; box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;">
                         <h1 style="text-align: center">Upload new File</h1>
                         <form method=post enctype=multipart/form-data>
+                            {% for message in get_flashed_messages() %}
+                            <p>{{ message }}</p>
+                            {% endfor %}
                             <input type=file name=file>
                             <input type=submit value=Upload>
                         </form>
