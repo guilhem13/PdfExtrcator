@@ -12,6 +12,7 @@ from model.ModelBdd import Session_creator
 from model.PdfModel import Pdf
 from model.NotificationModel import Notification
 import json
+from pathlib import Path
 
 ################################ Path Directory And Configuration ##########################
 
@@ -22,7 +23,8 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 app = Flask(__name__)
 path = os.getcwd()
 UPLOAD_FOLDER = os.getcwd()
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+print(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = "."#UPLOAD_FOLDER
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
 #
@@ -52,7 +54,8 @@ def upload_file():
             else:                 
 
                 if file and allowed_file(file.filename):
-
+                    filename = secure_filename(file.filename)
+                    file.save(Path("C:/Users/Guilhem/Desktop/ProjetPython/",file.filename))
                     PdfProcessed = Extractor(file.filename)           
                     pdf = Pdf(getattr(PdfProcessed,'pdf_path'),getattr(PdfProcessed,'text_from_pdf'),getattr(PdfProcessed,'title'),getattr(PdfProcessed,'creationDate'),getattr(PdfProcessed,'author'),getattr(PdfProcessed,'creator'),getattr(PdfProcessed,'producer'),getattr(PdfProcessed,'subject'),getattr(PdfProcessed,'keywords'),getattr(PdfProcessed,'number_of_pages'))
                     session.add(pdf)

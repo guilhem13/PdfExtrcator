@@ -6,6 +6,7 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import resolve1
+import chardet
 
 class Extractor():
     pdf_path = None
@@ -29,14 +30,16 @@ class Extractor():
         with open(self.pdf_path, 'rb') as fh:
             parser = PDFParser(fh)
             doc = PDFDocument(parser)
-            self.title = doc.info[0]['Title'].decode("utf-8")
-            self.creationDate = doc.info[0]['CreationDate'].decode("utf-8")
-            self.author = doc.info[0]['Author'].decode("utf-8")
-            self.creator = doc.info[0]['Creator'].decode("utf-8")
-            self.keywords = doc.info[0]['Keywords'].decode("utf-8")
-            self.producer = doc.info[0]['Producer'].decode("utf-8")
-            self.subject = doc.info[0]['Subject'].decode("utf-8")
-            self.number_of_pages = resolve1(doc.catalog['Pages'])['Count']
+            #TODO
+            # Problème au niveau de l'encoding , parfois charset renvoie un None. du coup la trdauction d'encoding ne se fait pas                     
+            self.title = doc.info[0]['Title'].decode(chardet.detect(doc.info[0]['Title'])['encoding']) if 'Title' in doc.info[0] else None
+            self.creationDate = doc.info[0]['CreationDate'].decode(chardet.detect(doc.info[0]['CreationDate'])['encoding']) if 'CreationDate' in doc.info[0] else None
+            self.author = doc.info[0]['Author'].decode(chardet.detect(doc.info[0]['Author'])['encoding']) if 'Author' in doc.info[0] else None
+            self.creator = doc.info[0]['Creator'].decode(chardet.detect(doc.info[0]['Creator'])['encoding']) if 'Creator' in doc.info[0] else None
+            self.keywords = doc.info[0]['Keywords'].decode(chardet.detect(doc.info[0]['Keywords'])['encoding']) if 'Keywords' in doc.info[0] else None
+            self.producer = doc.info[0]['Producer'].decode(chardet.detect(doc.info[0]['Producer'])['encoding']) if 'Producer' in doc.info[0] else None
+            self.subject = doc.info[0]['Subject'].decode(chardet.detect(doc.info[0]['Subject'])['encoding']) if 'Subject' in doc.info[0] else None
+            self.number_of_pages = resolve1(doc.catalog['Pages'])['Count'] 
             for page in PDFPage.get_pages(fh,caching=True,check_extractable=True):
                 page_interpreter.process_page(page)
                 
