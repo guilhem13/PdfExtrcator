@@ -55,7 +55,7 @@ def upload_file():
 
                 if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
-                    file.save(Path("C:/Users/Guilhem/Desktop/ProjetPython/",file.filename))
+                    file.save(Path(".",file.filename))
                     PdfProcessed = Extractor(file.filename)           
                     pdf = Pdf(getattr(PdfProcessed,'pdf_path'),getattr(PdfProcessed,'text_from_pdf'),getattr(PdfProcessed,'title'),getattr(PdfProcessed,'creationDate'),getattr(PdfProcessed,'author'),getattr(PdfProcessed,'creator'),getattr(PdfProcessed,'producer'),getattr(PdfProcessed,'subject'),getattr(PdfProcessed,'keywords'),getattr(PdfProcessed,'number_of_pages'))
                     session.add(pdf)

@@ -31,14 +31,30 @@ class Extractor():
             parser = PDFParser(fh)
             doc = PDFDocument(parser)
             #TODO
-            # Problème au niveau de l'encoding , parfois charset renvoie un None. du coup la trdauction d'encoding ne se fait pas                     
-            self.title = doc.info[0]['Title'].decode(chardet.detect(doc.info[0]['Title'])['encoding']) if 'Title' in doc.info[0] else None
-            self.creationDate = doc.info[0]['CreationDate'].decode(chardet.detect(doc.info[0]['CreationDate'])['encoding']) if 'CreationDate' in doc.info[0] else None
-            self.author = doc.info[0]['Author'].decode(chardet.detect(doc.info[0]['Author'])['encoding']) if 'Author' in doc.info[0] else None
-            self.creator = doc.info[0]['Creator'].decode(chardet.detect(doc.info[0]['Creator'])['encoding']) if 'Creator' in doc.info[0] else None
-            self.keywords = doc.info[0]['Keywords'].decode(chardet.detect(doc.info[0]['Keywords'])['encoding']) if 'Keywords' in doc.info[0] else None
-            self.producer = doc.info[0]['Producer'].decode(chardet.detect(doc.info[0]['Producer'])['encoding']) if 'Producer' in doc.info[0] else None
-            self.subject = doc.info[0]['Subject'].decode(chardet.detect(doc.info[0]['Subject'])['encoding']) if 'Subject' in doc.info[0] else None
+            # Gérer l'encoding des bytes formart date D:20210713024315Z exemple sur le fichier 23
+
+            #Title
+            encodingTitle = chardet.detect(doc.info[0]['Title'])['encoding'] if str(doc.info[0]['Title']) != "b''" else 0               
+            self.title = doc.info[0]['Title'].decode(encodingTitle) if 'Title' in doc.info[0] and encodingTitle !=0  else None
+            #Encoding
+            encodingcreationDate = chardet.detect(doc.info[0]['CreationDate'])['encoding'] if str(doc.info[0]['CreationDate']) != "b''" else 0
+            self.creationDate = doc.info[0]['CreationDate'].decode(encodingcreationDate) if 'CreationDate' in doc.info[0] and encodingcreationDate !=0 else None
+            #Author
+            encodingAuhtor = chardet.detect(doc.info[0]['Author'])['encoding'] if str(doc.info[0]['Author']) != "b''" else 0  
+            self.author = doc.info[0]['Author'].decode(encodingAuhtor) if 'Author' in doc.info[0] and encodingAuhtor !=0 else None
+            #Creator
+            encodingCreator  = chardet.detect(doc.info[0]['Creator'])['encoding'] if str(doc.info[0]['Creator']) != "b''" else 0  
+            self.creator = doc.info[0]['Creator'].decode(encodingCreator) if 'Creator' in doc.info[0] and encodingCreator != 0 else None
+            #keywords
+            encodingKeywords  = chardet.detect(doc.info[0]['Keywords'])['encoding'] if str(doc.info[0]['Keywords']) != "b''" else 0 
+            self.keywords = doc.info[0]['Keywords'].decode(encodingKeywords) if 'Keywords' in doc.info[0] and encodingKeywords != 0 else None
+            #producer
+            encodingProducer  = chardet.detect(doc.info[0]['Producer'])['encoding'] if str(doc.info[0]['Producer']) != "b''" else 0 
+            self.producer = doc.info[0]['Producer'].decode(encodingProducer) if 'Producer' in doc.info[0] and encodingProducer !=0 else None
+            #Subject
+            encodingSubject  = chardet.detect(doc.info[0]['Subject'])['encoding'] if str(doc.info[0]['Subject']) != "b''" else 0
+            self.subject = doc.info[0]['Subject'].decode(encodingSubject) if 'Subject' in doc.info[0] and encodingSubject != 0 else None
+
             self.number_of_pages = resolve1(doc.catalog['Pages'])['Count'] 
             for page in PDFPage.get_pages(fh,caching=True,check_extractable=True):
                 page_interpreter.process_page(page)
