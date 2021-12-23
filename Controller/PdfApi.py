@@ -14,6 +14,8 @@ from model.NotificationModel import Notification
 import json
 from pathlib import Path
 
+from celery import Celery
+
 ################################ Path Directory And Configuration ##########################
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -56,15 +58,18 @@ def upload_file():
                 if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
                     file.save(Path(".",file.filename))
-                    PdfProcessed = Extractor(file.filename)           
-                    pdf = Pdf(getattr(PdfProcessed,'pdf_path'),getattr(PdfProcessed,'text_from_pdf'),getattr(PdfProcessed,'title'),getattr(PdfProcessed,'creationDate'),getattr(PdfProcessed,'author'),getattr(PdfProcessed,'creator'),getattr(PdfProcessed,'producer'),getattr(PdfProcessed,'subject'),getattr(PdfProcessed,'keywords'),getattr(PdfProcessed,'number_of_pages'))
-                    session.add(pdf)
-                    session.commit()
-                    filename = secure_filename(file.filename)
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename)) 
-                    #flash("File upload with Id "+str(pdf.id))
-                    #return redirect(request.url)       
-                    return json.dumps({"message":"File uploaded","id_uploaded":str(pdf.id)})
+                    PdfProcessed = Extractor(file.filename)
+                    if getattr(PdfProcessed,'extracted') == True:         
+                        pdf = Pdf(getattr(PdfProcessed,'pdf_path'),getattr(PdfProcessed,'text_from_pdf'),getattr(PdfProcessed,'title'),getattr(PdfProcessed,'creationDate'),getattr(PdfProcessed,'author'),getattr(PdfProcessed,'creator'),getattr(PdfProcessed,'producer'),getattr(PdfProcessed,'subject'),getattr(PdfProcessed,'keywords'),getattr(PdfProcessed,'number_of_pages'))
+                        session.add(pdf)
+                        session.commit()
+                        filename = secure_filename(file.filename)
+                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename)) 
+                        #flash("File upload with Id "+str(pdf.id))
+                        #return redirect(request.url)       
+                        return json.dumps({"message":"File uploaded","id_uploaded":str(pdf.id)})
+                    else: 
+                        return Notification("4","PDF file Corrupted, No /Root object. Please repair your pdf").Message() 
                 else: 
                     #flash("File type not permitted")
                     #return redirect(request.url)
