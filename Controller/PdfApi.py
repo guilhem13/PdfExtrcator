@@ -5,7 +5,7 @@ import sys
 lib_path = os.path.abspath('./')
 sys.path.append(lib_path)
 
-from flask import Flask, flash, request, redirect, render_template
+from flask import Flask, flash, request, redirect, render_template,jsonify
 from werkzeug.utils import secure_filename
 from model.ExtractorFromPdf import Extractor
 from model.ModelBdd import Session_creator
@@ -14,7 +14,7 @@ from model.NotificationModel import Notification
 import json
 from pathlib import Path
 
-from celery import Celery
+from celery import Celery #ris
 
 ################################ Path Directory And Configuration ##########################
 
@@ -29,6 +29,14 @@ print(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = "."#UPLOAD_FOLDER
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
+
+# Celery configuration
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0' #ris
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'#ris
+# Initialize Celery
+celery = Celery(app.name, backend=app.config['CELERY_RESULT_BACKEND'], broker=app.config['CELERY_BROKER_URL']) #ris
+celery.conf.update(app.config)#ris
+
 #
 #app.config.from_object("config")
 
@@ -118,6 +126,11 @@ def display_metadat(id):
 def display_text(id):
     status = session.query(Pdf).filter( Pdf.id == id).one()
     return status.data
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    print(error)
+    return jsonify({ 'error': ':/' }), 500
 
 session.close()
 if __name__ == "__main__":
