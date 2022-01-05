@@ -10,7 +10,8 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "Controller/PdfApi.py",
+                //"FLASK_APP": "Controller/PdfApi.py",
+                "FLASK_APP": "webapp.py",
                 "FLASK_ENV": "development"
             },
             "args": [
