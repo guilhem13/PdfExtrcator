@@ -1,6 +1,9 @@
 import os
 import sys
 import json
+
+#from flask.wrappers import Response
+from flask import Response
 #lib_path = os.path.abspath('./')
 #sys.path.append(lib_path)
 from __init__ import app
@@ -17,7 +20,7 @@ from celery import Celery
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'basededonneepdf.db')
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf'}#, 'png', 'jpg', 'jpeg', 'gif'}
 
 
 
@@ -33,7 +36,6 @@ celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.co
 
 session = Session_creator()
 
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -42,19 +44,23 @@ def allowed_file(filename):
 def upload_file():
     if request.method == 'POST':
         if 'file' not in request.files:
-            return Notification("1", "No file part").Message()
+            #return Notification("1", "No file part").Message()
+            return Response(Notification("1", "No file part").Message(), status=400, mimetype='application/json')
         else:
             file = request.files['file']
             if file.filename == '':
-                return Notification("2", "No selected file").Message()
+                #return Notification("2", "No selected file").Message()
+                return Response(Notification("2", "No selected file").Message(), status=400, mimetype='application/json')
             else:
                 if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                     task = InjestPdf.apply_async([file.filename])
-                    return jsonify({'task_id': task.id}), 202
+                    #return jsonify({'task_id': task.id}), 202
+                    return Response("{'task_id':"+task.id+"}", status=202, mimetype='application/json')
                 else:
-                    return Notification("3", "File type not permitted").Message()
+                    #return Notification("3", "File type not permitted").Message()
+                    return Response(Notification("3", "File type not permitted").Message(), status=400, mimetype='application/json')
 
     return render_template('index.html')
 
@@ -93,7 +99,6 @@ def taskstatus(id):
             response = {
                 "id": id,
                 'state': task.state,
-                'status1h': str(task.info),
                 "status": "SUCCESS",
                 "uploaded_date": str(status.creationDate),
                 "author": str(status.author),

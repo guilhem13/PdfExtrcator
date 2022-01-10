@@ -1,5 +1,4 @@
 """SASL mechanisms for AMQP authentication."""
-from __future__ import absolute_import, unicode_literals
 
 import socket
 import warnings
@@ -8,7 +7,7 @@ from io import BytesIO
 from amqp.serialization import _write_table
 
 
-class SASL(object):
+class SASL:
     """The base class for all amqp SASL authentication mechanisms.
 
     You should sub-class this if you're implementing your own authentication.

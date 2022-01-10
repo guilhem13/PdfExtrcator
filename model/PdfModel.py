@@ -12,7 +12,7 @@ class Pdf(ModelBdd.Base):
     creator = Column("creator", String(255))
     producer = Column("producer", String(255))
     subject = Column("subject", String(255))
-    keywords = Column("title", String(255))
+    keywords = Column("keywords", String(255))
     number_of_pages = Column("number_of_pages", Integer)
 
     def __init__(self, name, data, title, creationDate, author, creator, producer, subject, keywords, number_of_pages):
