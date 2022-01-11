@@ -57,7 +57,7 @@ def upload_file():
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                     task = InjestPdf.apply_async([file.filename])
                     #return jsonify({'task_id': task.id}), 202
-                    return Response("{'task_id':"+task.id+"}", status=202, mimetype='application/json')
+                    return Response(json.dumps({'task_id': task.id}), status=202, mimetype='application/json')
                 else:
                     #return Notification("3", "File type not permitted").Message()
                     return Response(Notification("3", "File type not permitted").Message(), status=400, mimetype='application/json')
@@ -82,7 +82,6 @@ def InjestPdf(self, file):
 @app.route('/documents/<id>')
 def taskstatus(id):
     task = InjestPdf.AsyncResult(id)
-    print(task.state)
     if task.state == 'PENDING':
         response = {
             'state': 'pending'

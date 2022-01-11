@@ -1,8 +1,11 @@
 import json
 from io import BytesIO
-from webapp import app, InjestPdf
+#from webapp import app, InjestPdf
 import pytest
-
+#
+import os 
+lib_path = os.path.abspath('./')
+print(lib_path)
 def test_main_en_point(test_client):
     response = test_client.get("/")
     assert response.status_code == 404
@@ -24,34 +27,35 @@ def upload_file(test_client):
     response = test_client.post("/documents", data=data, content_type="multipart/form-data")
     assert response.status_code == 202
 
-def test_document(test_client):
-    from flask_celeryext import create_celery_app
-    app.config.update(dict(CELERY_ALWAYS_EAGER=True,CELERY_RESULT_BACKEND='cache',CELERY_CACHE_BACKEND='memory',CELERY_EAGER_PROPAGATES_EXCEPTIONS=True))
-    celery = create_celery_app(app)
-    #test document info
-    #task = InjestPdf.apply_async(["Test.pdf"])
-    #id = InjestPdf("Test.pdf")['id']
-    #with test_client: 
-    task = InjestPdf.apply(args=("Test.pdf")).get()
-    print(task)
-    #eq_(rst, 8)
-    #task = celery_app.InjestPdf.apply_async(["C:/Users/Guilhem/Desktop/Test.pdf"])
-    res = test_client.get("/documents/"+task.id)
-    #data = json.loads(res.get_data(as_text=True))
-    # The status must be 200 OK
-    assert res.status_code == 200
-    # We test if we received the ID of the JSON object
+def test_tasks_Views(test_client,create_app):
     
-    assert res["id"] == task.id
-"""
-#{"author":"None","creator":"Adobe InDesign CS4 (6.0)","id":"6ad81629-338f-4c18-b3ee-5d4d2814e102","keywords":"None","number_of_pages":"12","producer":"Adobe PDF Library 9.0","state":"SUCCESS","status":"SUCCESS","subject":"None","title":"None","uploaded_date":"28-Jan-2019 (11:33:09.000000)"}
-def test_text(test_client):
-    #test document content
-    res = test_client.get("/text/6ad81629-338f-4c18-b3ee-5d4d2814e102")
-    data = res.get_data(as_text=True)
-    # The status must be 200 OK
-    assert res.status_code == 200
-    # We test if we received the ID of the JSON object
-    assert type(data) == str"""
+    files = {'file' : open('C:/Users/Guilhem/Desktop/Test.pdf', 'rb')} 
+    r = test_client.post("/documents", data=files)  
+    content = json.loads(r.data.decode())
+    task_id = content["task_id"]
+    assert r.status_code == 202
+    assert task_id
+
+    #############
+    client = create_app.test_client()
+    resp = client.get("/documents/"+task_id)
+    content2 = json.loads(resp.data.decode())
+    while content2['state'] == 'pending':
+        resp = test_client.get(f"documents/{task_id}")
+        content2 = json.loads(resp.data.decode())
+    content2 = json.loads(resp.data.decode())
+    assert content2["state"] == "SUCCESS"  
+    assert resp.status_code == 200
+    
+    ##############
+    client2 = create_app.test_client()
+    resp = client2.get("/text/"+task_id)
+    content3 = resp.data
+
+    assert resp.status_code == 200
+    assert content3 is not None
+    
+
+
 
 
