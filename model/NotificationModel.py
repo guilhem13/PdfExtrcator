@@ -7,7 +7,7 @@ class Notification:
     error = None
 
     def __init__(self, id, error):
-        self.id = id
+        self.id_error = id
         self.error = error
 
     def Message(self):
