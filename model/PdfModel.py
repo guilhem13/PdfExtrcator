@@ -1,14 +1,14 @@
 from sqlalchemy import Column, Integer, String
 
-from model import ModelBdd
+from model import modelbdd
 
 
-class Pdf(ModelBdd.Base):
+class Pdf(modelbdd.Base):
     __tablename__ = "pdftext"
     id = Column("id", String, primary_key=True)
     name = Column("name", String)
     data = Column("data", String)
-    creationDate = Column("date", String(255))
+    creationdate = Column("date", String(255))
     author = Column("author", String(255))
     title = Column("title", String(255))
     creator = Column("creator", String(255))
@@ -22,7 +22,7 @@ class Pdf(ModelBdd.Base):
         name,
         data,
         title,
-        creationDate,
+        creationdate,
         author,
         creator,
         producer,
@@ -33,7 +33,7 @@ class Pdf(ModelBdd.Base):
         self.name = name
         self.data = data
         self.title = title
-        self.creationDate = creationDate
+        self.creationdate = creationdate
         self.author = author
         self.creator = creator
         self.producer = producer

@@ -6,10 +6,10 @@ from flask import Flask, Response, jsonify, render_template, request
 from werkzeug.utils import secure_filename
 
 from __init__ import app
-from model.ExtractorFromPdf import Extractor
-from model.ModelBdd import Session_creator
-from model.NotificationModel import Notification
-from model.PdfModel import Pdf
+from model.extractorfrompdf import Extractor
+from model.modelbdd import Session_creator
+from model.notificationmodel import Notification
+from model.pdfmodel import Pdf
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "basededonneepdf.db")
@@ -21,7 +21,7 @@ app.secret_key = "super secret key"
 app.config["SESSION_TYPE"] = "filesystem"
 
 app.config["CELERY_BROKER_URL"] = "amqp://guest:guest@localhost/test"
-app.config["CELERY_RESULT_BACKEND"] = "amqp://guest:guest@localhost/test"
+app.config["CELERY_RESULT_BACKEND"] = "amqp://guest:guest@localhost/test"#'rpc://'
 celery = Celery(
     app.name,
     broker=app.config["CELERY_BROKER_URL"],
@@ -40,7 +40,6 @@ def allowed_file(filename):
 def upload_file():
     if request.method == "POST":
         if "file" not in request.files:
-            # return Notification("1", "No file part").Message()
             return Response(
                 Notification("1", "No file part").Message(),
                 status=400,
@@ -49,7 +48,6 @@ def upload_file():
         else:
             file = request.files["file"]
             if file.filename == "":
-                # return Notification("2", "No selected file").Message()
                 return Response(
                     Notification("2", "No selected file").Message(),
                     status=400,
@@ -60,14 +58,12 @@ def upload_file():
                     filename = secure_filename(file.filename)
                     file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
                     task = InjestPdf.apply_async([file.filename])
-                    # return jsonify({'task_id': task.id}), 202
                     return Response(
                         json.dumps({"task_id": task.id}),
                         status=202,
                         mimetype="application/json",
                     )
                 else:
-                    # return Notification("3", "File type not permitted").Message()
                     return Response(
                         Notification("3", "File type not permitted").Message(),
                         status=400,
@@ -85,7 +81,7 @@ def InjestPdf(self, file):
             getattr(PdfProcessed, "pdf_path"),
             getattr(PdfProcessed, "text_from_pdf"),
             getattr(PdfProcessed, "title"),
-            getattr(PdfProcessed, "creationDate"),
+            getattr(PdfProcessed, "creationdate"),
             getattr(PdfProcessed, "author"),
             getattr(PdfProcessed, "creator"),
             getattr(PdfProcessed, "producer"),
@@ -106,7 +102,24 @@ def InjestPdf(self, file):
 def taskstatus(id):
     task = InjestPdf.AsyncResult(id)
     if task.state == "PENDING":
-        response = {"state": "pending"}
+        if session.query(Pdf).filter(Pdf.id == id).scalar() is not None: #in Case of an other celery session
+            status = session.query(Pdf).filter(Pdf.id == id).one()
+            response = {
+                "id": id,
+                "state": task.state,
+                "uploaded_date": str(status.creationdate),
+                "author": str(status.author),
+                "creator": str(status.creator),
+                "producer": str(status.producer),
+                "subject": str(status.subject),
+                "title": str(status.title),
+                "number_of_pages": str(status.number_of_pages),
+                "keywords": str(status.keywords),
+            }
+            return response
+        else:  
+            response = {"state": "pending"}
+
     elif task.state == "FAILURE":
         response = {
             "state": "completed",
@@ -119,8 +132,7 @@ def taskstatus(id):
             response = {
                 "id": id,
                 "state": task.state,
-                "status": "SUCCESS",
-                "uploaded_date": str(status.creationDate),
+                "uploaded_date": str(status.creationdate),
                 "author": str(status.author),
                 "creator": str(status.creator),
                 "producer": str(status.producer),

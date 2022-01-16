@@ -1,7 +1,7 @@
 import os
 import sys
 
-from model import PdfModel
+from model import pdfmodel
 
 
 def test_Pdf():
@@ -10,7 +10,7 @@ def test_Pdf():
     WHEN a new User is created
     THEN check the email, hashed_password, and role fields are defined correctly
     """
-    pdf = PdfModel.Pdf(
+    pdf = pdfmodel.Pdf(
         "pdftest",
         "data",
         "titre du pdf",

@@ -6,14 +6,14 @@ import pytest
 lib_path = os.path.abspath("./")
 sys.path.append(lib_path)
 
-from model import PdfModel
-from model.ModelBdd import Session_creator
+from model import pdfmodel
+from model.modelbdd import Session_creator
 from webapp import app
 
 
 @pytest.fixture(scope="module")
 def new_pdf():
-    pdf = PdfModel.Pdf(
+    pdf = pdfmodel.Pdf(
         "1",
         "pdftest",
         "data",
@@ -47,7 +47,7 @@ def test_client():
 def init_database(test_client):
     # Create the session and add to db
     session = Session_creator()
-    pdf = pdf = PdfModel.Pdf(
+    pdf = pdf = pdfmodel.Pdf(
         "1",
         "pdftest",
         "data",
