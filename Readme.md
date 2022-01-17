@@ -51,7 +51,8 @@ flask run
 
 Open http://localhost:5000/documents in a browser to upload your pdf 
 ![GitHub Logo](/images/localhost_5000_documents.PNG)
-###### Command 
+
+###### On Command 
 
 
 
